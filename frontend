@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- meta for displaying characters beyond ascii values or special characters properly -->
+    <meta charset="UTF-8">
+    <!-- for mobile meta -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+    <!-- bootstrap link -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+    
+    <title>Candyshop </title>
+    <style>
+        h1{text-align: center;}
+        form{text-align: center;}
+        
+        
+    
+    </style>
+</head>
+
+<body>
+    <h1>Sweety's Candy Shop Inventory</h1>
+    <div class="container">     
+        <form onsubmit="display(event)" id="form">
+            <input type="text" placeholder="Candy Name" id="name">
+            <input type="number" placeholder="Price" id="price">
+            <input type="number" placeholder="Quantity" id="qty"><br><br>
+            <input type="submit" value="Add Candy" id="btn" class="btn btn-primary">
+        </form>
+        <h3>Today's Inventory List </h3>
+        <h4>
+        <div class="row" id="newcandy"></div>  
+        </h4>
+    </div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.19.0/axios.min.js"></script>
+    <script>
+    async function display(event){
+        event.preventDefault();
+        const candy = document.getElementById("name").value;        
+        const price = document.getElementById("price").value;
+        const quantity = document.getElementById("qty").value;
+        const obj = {
+            candy,
+            price,
+            quantity};
+        const parent = document.getElementById("newcandy");
+        const child =document.createElement("li");      
+        child.textContent = candy+" price:"+price+" stock:"+quantity+" ";       
+        const buy1 = document.createElement("button");
+        buy1.innerHTML = "Buy One";
+        buy1.onclick =()=> reduce(obj, 1);
+        const buy2 = document.createElement("button");
+        buy2.innerHTML = "Buy Two";
+        buy2.onclick =()=> reduce(obj, 2);
+        const buy3 = document.createElement("button");
+        buy3.innerHTML = "Buy Three";
+        buy3.onclick =()=> reduce(obj, 3);    
+        child.append(buy1," ",  buy2," ", buy3);
+        parent.appendChild(child);
+        document.getElementById("form").reset();
+        try{
+        const res = await axios.post("http://localhost:4000/user/add-candy", obj);  
+        }catch(err){console.log(err)}
+    }
+
+
+    function showOnScreen(obj){
+        const candy = obj.candy;       
+        const price = obj.price;
+        const quantity = obj.quantity
+        const parent = document.getElementById("newcandy");
+        const child =document.createElement("li");
+        child.textContent = candy+" price:"+price+" stock:"+quantity+" ";
+        const buy1 = document.createElement("button");
+        buy1.innerHTML = "Buy One";
+        const buy2 = document.createElement("button");
+        buy2.innerHTML = "Buy Two";
+        const buy3 = document.createElement("button");
+        buy3.innerHTML = "Buy Three";
+        buy1.onclick = ()=>reduce(obj, 1);
+        buy2.onclick = ()=> reduce(obj, 2);
+        buy3.onclick =()=> reduce(obj, 3);
+        child.append(buy1," ",  buy2," ", buy3);
+        parent.appendChild(child); 
+    }
+
+
+    window.onload = async function(){
+        try{
+        let res = await axios.get("http://localhost:4000/user/get-candy");
+        for(let i=0; i<res.data.length; i++){
+            showOnScreen(res.data[i]);
+        }
+        }catch(err){console.log(err)}
+    }
+
+    
+    async function reduce(obj, n){         
+        obj.quantity = obj.quantity - n;
+        const {_id, ...data} = obj;
+        try{
+        const res = await axios.put(`http://localhost:4000/user/get-candy/${obj.id}`,data);
+        window.location.reload(); //page reloading
+        }catch(err){console.log(err)}
+    }
+        
+        </script>
+</body>
+</html>
